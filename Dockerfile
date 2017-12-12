@@ -1,9 +1,9 @@
 FROM ubuntu:16.04
 
-ARG TERRAFORM_VERSION=0.11.0
-ARG TERRAGRUNT_VERSION=0.13.22
+ARG TERRAFORM_VERSION=0.11.1
+ARG TERRAGRUNT_VERSION=0.13.23
 ARG NODE_VERSION=6.x
-ARG AWSCLI_VERSION=1.11.185
+ARG AWSCLI_VERSION=1.14.8
 
 RUN apt-get update && \
     # Install add-apt-repository
@@ -21,6 +21,12 @@ RUN apt-get update && \
 # Install Nodejs
 RUN curl -sL https://deb.nodesource.com/setup_"$NODE_VERSION" | bash -
 RUN apt-get install -y --no-install-recommends nodejs
+
+# Install Yarn
+RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
+RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list && \
+    apt-get update && \
+    apt-get install yarn
 
 # Install AWS CLI
 RUN wget "https://bootstrap.pypa.io/get-pip.py" -O /tmp/get-pip.py && \
