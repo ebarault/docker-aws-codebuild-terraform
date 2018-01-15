@@ -1,9 +1,9 @@
 FROM ubuntu:16.04
 
-ARG TERRAFORM_VERSION=0.11.1
-ARG TERRAGRUNT_VERSION=0.13.23
+ARG TERRAFORM_VERSION=0.11.2
+ARG TERRAGRUNT_VERSION=0.13.24
 ARG NODE_VERSION=6.x
-ARG AWSCLI_VERSION=1.14.8
+ARG AWSCLI_VERSION=1.14.24
 
 RUN apt-get update && \
     # Install add-apt-repository
@@ -33,6 +33,9 @@ RUN wget "https://bootstrap.pypa.io/get-pip.py" -O /tmp/get-pip.py && \
     python /tmp/get-pip.py && \
     pip install awscli=="$AWSCLI_VERSION" && \
     rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Install AWS ELASTIC BEANSTALK CLI
+RUN pip install awsebcli --upgrade --user
 
 # Install Terraform
 RUN curl -sL https://releases.hashicorp.com/terraform/"$TERRAFORM_VERSION"/terraform_"$TERRAFORM_VERSION"_linux_amd64.zip -o terraform_"$TERRAFORM_VERSION"_linux_amd64.zip && \
