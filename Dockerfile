@@ -35,7 +35,7 @@ RUN wget "https://bootstrap.pypa.io/get-pip.py" -O /tmp/get-pip.py && \
     rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Install AWS ELASTIC BEANSTALK CLI
-RUN pip install awsebcli --upgrade --user
+RUN pip install awsebcli --upgrade
 
 # Install Terraform
 RUN curl -sL https://releases.hashicorp.com/terraform/"$TERRAFORM_VERSION"/terraform_"$TERRAFORM_VERSION"_linux_amd64.zip -o terraform_"$TERRAFORM_VERSION"_linux_amd64.zip && \
