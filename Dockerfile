@@ -3,7 +3,7 @@ FROM ubuntu:16.04
 ARG TERRAFORM_VERSION=0.11.2
 ARG TERRAGRUNT_VERSION=0.13.24
 ARG NODE_VERSION=6.x
-ARG AWSCLI_VERSION=1.14.24
+ARG AWSCLI_VERSION=1.14.26
 
 RUN apt-get update && \
     # Install add-apt-repository
@@ -14,7 +14,7 @@ RUN apt-get update && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
       wget curl git openssh-client jq python make \
-      ca-certificates tar gzip zip unzip && \
+      ca-certificates tar gzip zip unzip gettext-base && \
     rm -rf /var/lib/apt/lists/* && \
     apt-get clean
 
