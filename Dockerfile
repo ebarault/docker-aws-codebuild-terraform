@@ -5,6 +5,13 @@ ARG TERRAGRUNT_VERSION=0.13.24
 ARG NODE_VERSION=6.x
 ARG AWSCLI_VERSION=1.14.26
 
+ENV DOCKER_BUCKET="download.docker.com" \
+    DOCKER_VERSION="17.09.0-ce" \
+    DOCKER_CHANNEL="stable" \
+    DOCKER_SHA256="a9e90a73c3cdfbf238f148e1ec0eaff5eb181f92f35bdd938fd7dab18e1c4647" \
+    DIND_COMMIT="3b5fac462d21ca164b3778647420016315289034" \
+    DOCKER_COMPOSE_VERSION="1.16.1"
+
 RUN apt-get update && \
     # Install add-apt-repository
     apt-get install -y --no-install-recommends \
@@ -46,4 +53,35 @@ RUN curl -sL https://releases.hashicorp.com/terraform/"$TERRAFORM_VERSION"/terra
 RUN curl -sL https://github.com/gruntwork-io/terragrunt/releases/download/v"$TERRAGRUNT_VERSION"/terragrunt_linux_amd64 -o /usr/bin/terragrunt && \
     chmod +x /usr/bin/terragrunt
 
-CMD [ "node" ]
+# Install Docker with dind support
+COPY dockerd-entrypoint.sh /usr/local/bin/
+
+# From the docker:17.09
+RUN set -x \
+    && curl -fSL "https://${DOCKER_BUCKET}/linux/static/${DOCKER_CHANNEL}/x86_64/docker-${DOCKER_VERSION}.tgz" -o docker.tgz \
+    && echo "${DOCKER_SHA256} *docker.tgz" | sha256sum -c - \
+    && tar --extract --file docker.tgz --strip-components 1  --directory /usr/local/bin/ \
+    && rm docker.tgz \
+    && docker -v \
+# From the docker dind 17.09
+    # && apt-get update && apt-get install -y --no-install-recommends \
+    #           e2fsprogs=1.42.9-* iptables=1.4.21-* xfsprogs=3.1.9ubuntu2 xz-utils=5.1.1alpha+20120614-* \
+    && apt-get update && apt-get install -y --no-install-recommends \
+              e2fsprogs iptables xfsprogs xz-utils \
+# set up subuid/subgid so that "--userns-remap=default" works out-of-the-box
+    && addgroup dockremap \
+    && useradd -g dockremap dockremap \
+    && echo 'dockremap:165536:65536' >> /etc/subuid \
+    && echo 'dockremap:165536:65536' >> /etc/subgid \
+    && wget "https://raw.githubusercontent.com/docker/docker/${DIND_COMMIT}/hack/dind" -O /usr/local/bin/dind \
+    && curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-Linux-x86_64 > /usr/local/bin/docker-compose \
+    && chmod +x /usr/local/bin/dind /usr/local/bin/docker-compose \
+# Ensure docker-compose works
+    && docker-compose version \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+
+VOLUME /var/lib/docker
+
+ENTRYPOINT ["dockerd-entrypoint.sh"]
