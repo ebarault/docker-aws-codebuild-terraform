@@ -21,7 +21,7 @@ RUN apt-get update && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
       wget curl git openssh-client jq python make \
-      ca-certificates tar gzip zip unzip gettext-base && \
+      ca-certificates tar gzip zip unzip bzip2 gettext-base && \
     rm -rf /var/lib/apt/lists/* && \
     apt-get clean
 
