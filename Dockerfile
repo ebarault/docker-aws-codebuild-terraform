@@ -4,6 +4,7 @@ ARG TERRAFORM_VERSION=0.11.3
 ARG TERRAGRUNT_VERSION=0.14.0
 ARG NODE_VERSION=6.x
 ARG AWSCLI_VERSION=1.14.32
+ARG GITLFS_VERSION=2.3.4
 
 ENV DOCKER_BUCKET="download.docker.com" \
     DOCKER_VERSION="17.09.0-ce" \
@@ -52,6 +53,13 @@ RUN curl -sL https://releases.hashicorp.com/terraform/"$TERRAFORM_VERSION"/terra
 # Install Terragrunt
 RUN curl -sL https://github.com/gruntwork-io/terragrunt/releases/download/v"$TERRAGRUNT_VERSION"/terragrunt_linux_amd64 -o /usr/bin/terragrunt && \
     chmod +x /usr/bin/terragrunt
+
+# Install Git LFS
+RUN curl -sL https://github.com/git-lfs/git-lfs/releases/download/v"$GITLFS_VERSION"/git-lfs-linux-amd64-"$GITLFS_VERSION".tar.gz -o gitlfs.tar.gz && \
+    mkdir -p gitlfs && \
+    tar --extract --file gitlfs.tar.gz --strip-components 1 --directory gitlfs && \
+    chmod +x gitlfs/install.sh && \
+    ./gitlfs/install.sh
 
 # Install Docker with dind support
 COPY dockerd-entrypoint.sh /usr/local/bin/
