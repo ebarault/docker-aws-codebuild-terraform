@@ -5,6 +5,9 @@ ARG TERRAGRUNT_VERSION=0.14.0
 ARG NODE_VERSION=8.x
 ARG AWSCLI_VERSION=1.14.32
 ARG GITLFS_VERSION=2.3.4
+ARG CAPISTRANO_VERSION=3.10.1
+ARG BOWER_VERSION=1.8.2
+ARG COMPOSER_VERSION=1.6.3
 
 ENV DOCKER_BUCKET="download.docker.com" \
     DOCKER_VERSION="17.09.0-ce" \
@@ -22,7 +25,8 @@ RUN apt-get update && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
       wget curl git openssh-client jq python make \
-      ca-certificates tar gzip zip unzip bzip2 gettext-base && \
+      ca-certificates tar gzip zip unzip bzip2 gettext-base \
+      ruby-full php && \
     rm -rf /var/lib/apt/lists/* && \
     apt-get clean
 
@@ -60,6 +64,26 @@ RUN curl -sL https://github.com/git-lfs/git-lfs/releases/download/v"$GITLFS_VERS
 # Install Terragrunt
 RUN curl -sL https://github.com/gruntwork-io/terragrunt/releases/download/v"$TERRAGRUNT_VERSION"/terragrunt_linux_amd64 -o /usr/bin/terragrunt && \
     chmod +x /usr/bin/terragrunt
+
+# Install Capistrano
+RUN gem install capistrano -v "$CAPISTRANO_VERSION"
+
+# Install Bower
+RUN npm install -g bower@"$BOWER_VERSION"
+
+# Install Composer
+RUN curl -s -f -L -o /tmp/installer.php https://raw.githubusercontent.com/composer/getcomposer.org/b107d959a5924af895807021fcef4ffec5a76aa9/web/installer \
+ && php -r " \
+    \$signature = '544e09ee996cdf60ece3804abc52599c22b1f40f4323403c44d44fdfdd586475ca9813a858088ffbc1f233e9b180f061'; \
+    \$hash = hash('SHA384', file_get_contents('/tmp/installer.php')); \
+    if (!hash_equals(\$signature, \$hash)) { \
+        unlink('/tmp/installer.php'); \
+        echo 'Integrity check failed, installer is either corrupt or worse.' . PHP_EOL; \
+        exit(1); \
+    }" \
+ && php /tmp/installer.php --no-ansi --install-dir=/usr/bin --filename=composer --version=${COMPOSER_VERSION} \
+ && composer --ansi --version --no-interaction \
+ && rm -rf /tmp/* /tmp/.htaccess
 
 # Install Docker with dind support
 COPY dockerd-entrypoint.sh /usr/local/bin/
