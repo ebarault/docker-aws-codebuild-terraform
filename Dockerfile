@@ -1,10 +1,11 @@
 FROM ubuntu:16.04
 
-ARG TERRAFORM_VERSION=0.11.3
-ARG TERRAGRUNT_VERSION=0.14.0
+ARG TERRAFORM_VERSION=0.11.7
+ARG TERRAGRUNT_VERSION=0.14.7
 ARG NODE_VERSION=6.x
-ARG AWSCLI_VERSION=1.14.32
+ARG AWSCLI_VERSION=1.15.4
 ARG GITLFS_VERSION=2.3.4
+ARG ANSIBLE_VERSION=2.4.3.0
 
 ENV DOCKER_BUCKET="download.docker.com" \
     DOCKER_VERSION="17.09.0-ce" \
@@ -36,10 +37,22 @@ RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources
     apt-get update && \
     apt-get install yarn
 
-# Install AWS CLI
+# Install pip
 RUN wget "https://bootstrap.pypa.io/get-pip.py" -O /tmp/get-pip.py && \
-    python /tmp/get-pip.py && \
-    pip install awscli=="$AWSCLI_VERSION" && \
+    python /tmp/get-pip.py
+
+# Install Ansible
+RUN pip install "ansible==$ANSIBLE_VERSION"
+
+# Install boto and boto3
+# boto is installed from maishsk:develop until https://github.com/boto/boto/pull/3794 is merged
+RUN pip install boto3 && \
+    git clone -b develop https://github.com/maishsk/boto.git && \
+    cd boto && \
+    python setup.py install
+
+# Install AWS CLI
+RUN pip install awscli=="$AWSCLI_VERSION" && \
     rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Install AWS ELASTIC BEANSTALK CLI
