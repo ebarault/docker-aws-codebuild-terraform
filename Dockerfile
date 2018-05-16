@@ -1,9 +1,9 @@
 FROM ubuntu:16.04
 
 ARG TERRAFORM_VERSION=0.11.7
-ARG TERRAGRUNT_VERSION=0.14.7
+ARG TERRAGRUNT_VERSION=0.14.10
 ARG NODE_VERSION=6.x
-ARG AWSCLI_VERSION=1.15.4
+ARG AWSCLI_VERSION=1.15.21
 ARG GITLFS_VERSION=2.3.4
 ARG ANSIBLE_VERSION=2.4.3.0
 
@@ -76,6 +76,7 @@ RUN curl -sL https://github.com/git-lfs/git-lfs/releases/download/v"$GITLFS_VERS
 
 # Install Docker with dind support
 COPY dockerd-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/dockerd-entrypoint.sh
 
 # From the docker:17.09
 RUN set -x \
