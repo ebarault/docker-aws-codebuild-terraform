@@ -68,7 +68,7 @@ RUN curl -sL https://github.com/gruntwork-io/terragrunt/releases/download/v"$TER
     chmod +x /usr/bin/terragrunt
 
 # Install Git LFS
-RUN curl -sL https://github.com/git-lfs/git-lfs/releases/download/v"$GITLFS_VERSION"/git-lfs-linux-amd64-"$GITLFS_VERSION".tar.gz -o gitlfs.tar.gz && \
+RUN curl -sL https://github.com/git-lfs/git-lfs/releases/download/v"$GITLFS_VERSION"/git-lfs-linux-amd64-v"$GITLFS_VERSION".tar.gz -o gitlfs.tar.gz && \
     mkdir -p gitlfs && \
     tar --extract --file gitlfs.tar.gz --strip-components 1 --directory gitlfs && \
     chmod +x gitlfs/install.sh && \
