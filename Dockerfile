@@ -1,10 +1,10 @@
 FROM ubuntu:16.04
 
-ARG TERRAFORM_VERSION=0.11.7
-ARG TERRAGRUNT_VERSION=0.14.10
-ARG NODE_VERSION=6.x
-ARG AWSCLI_VERSION=1.15.21
-ARG GITLFS_VERSION=2.3.4
+ARG TERRAFORM_VERSION=0.11.8
+ARG TERRAGRUNT_VERSION=0.16.7
+ARG NODE_VERSION=8.x
+ARG AWSCLI_VERSION=1.16.2
+ARG GITLFS_VERSION=2.5.1
 ARG ANSIBLE_VERSION=2.4.3.0
 
 ENV DOCKER_BUCKET="download.docker.com" \
@@ -73,6 +73,9 @@ RUN curl -sL https://github.com/git-lfs/git-lfs/releases/download/v"$GITLFS_VERS
     tar --extract --file gitlfs.tar.gz --strip-components 1 --directory gitlfs && \
     chmod +x gitlfs/install.sh && \
     ./gitlfs/install.sh
+
+# Install yq
+RUN pip install yq
 
 # Install Docker with dind support
 COPY dockerd-entrypoint.sh /usr/local/bin/
