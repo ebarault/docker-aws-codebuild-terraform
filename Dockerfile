@@ -1,9 +1,9 @@
 FROM ubuntu:16.04
 
 ARG TERRAFORM_VERSION=0.11.8
-ARG TERRAGRUNT_VERSION=0.16.7
+ARG TERRAGRUNT_VERSION=0.16.10
 ARG NODE_VERSION=8.x
-ARG AWSCLI_VERSION=1.16.2
+ARG AWSCLI_VERSION=1.16.15
 ARG GITLFS_VERSION=2.5.1
 ARG ANSIBLE_VERSION=2.4.3.0
 
@@ -73,6 +73,12 @@ RUN curl -sL https://github.com/git-lfs/git-lfs/releases/download/v"$GITLFS_VERS
     tar --extract --file gitlfs.tar.gz --directory gitlfs && \
     chmod +x gitlfs/install.sh && \
     ./gitlfs/install.sh
+
+# Install Splitsh
+RUN curl -L https://github.com/splitsh/lite/releases/download/v1.0.1/lite_linux_amd64.tar.gz > splitsh.tar.gz && \
+    tar -xf splitsh.tar.gz && \
+    mv splitsh-lite /usr/bin/splitsh && \
+    rm splitsh.tar.gz
 
 # Install yq
 RUN pip install yq
