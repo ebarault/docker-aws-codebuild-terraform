@@ -1,18 +1,15 @@
 FROM ubuntu:16.04
 
-ARG TERRAFORM_VERSION=0.11.8
-ARG TERRAGRUNT_VERSION=0.16.10
+ARG TERRAFORM_VERSION=0.11.14
+ARG TERRAGRUNT_VERSION=0.18.7
 ARG NODE_VERSION=8.x
-ARG AWSCLI_VERSION=1.16.15
-ARG GITLFS_VERSION=2.5.1
-ARG ANSIBLE_VERSION=2.4.3.0
+ARG AWSCLI_VERSION=1.16.200
+ARG GITLFS_VERSION=2.7.2
+ARG ANSIBLE_VERSION=2.8.2
 
-ENV DOCKER_BUCKET="download.docker.com" \
-    DOCKER_VERSION="17.09.0-ce" \
-    DOCKER_CHANNEL="stable" \
-    DOCKER_SHA256="a9e90a73c3cdfbf238f148e1ec0eaff5eb181f92f35bdd938fd7dab18e1c4647" \
-    DIND_COMMIT="3b5fac462d21ca164b3778647420016315289034" \
-    DOCKER_COMPOSE_VERSION="1.16.1"
+ENV DOCKER_VERSION="18.09.8" \
+    DIND_COMMIT="37498f009d8bf25fbb6199e8ccd34bed84f2874b" \
+    DOCKER_COMPOSE_VERSION="1.24.1"
 
 RUN apt-get update && \
     # Install add-apt-repository
@@ -83,36 +80,53 @@ RUN curl -L https://github.com/splitsh/lite/releases/download/v1.0.1/lite_linux_
 # Install yq
 RUN pip install yq
 
+
+# From docker:18.09.08
+RUN set -eux; \
+	wget -O docker.tgz "https://download.docker.com/linux/static/stable/x86_64/docker-${DOCKER_VERSION}.tgz"; \
+	tar --extract \
+		--file docker.tgz \
+		--strip-components 1 \
+		--directory /usr/local/bin/ \
+	; \
+	rm docker.tgz; \
+	\
+	dockerd --version; \
+	docker --version
+
+# From docker dind 18.09.08
+# https://github.com/docker/docker/blob/master/project/PACKAGERS.md#runtime-dependencies
+RUN set -eux; \
+  apt-get update && \
+	apt-get install -y --no-install-recommends \
+		btrfs-tools \
+		e2fsprogs \
+		iptables \
+		openssl \
+		xfsprogs \
+		xz-utils \
+# pigz: https://github.com/moby/moby/pull/35697 (faster gzip implementation)
+		pigz
+
+# set up subuid/subgid so that "--userns-remap=default" works out-of-the-box
+RUN set -x \
+	&& addgroup dockremap \
+	&& useradd -g dockremap dockremap \
+	&& echo 'dockremap:165536:65536' >> /etc/subuid \
+	&& echo 'dockremap:165536:65536' >> /etc/subgid
+
+# https://github.com/docker/docker/tree/master/hack/dind
+ENV DIND_COMMIT 37498f009d8bf25fbb6199e8ccd34bed84f2874b
+
+RUN set -eux; \
+	wget -O /usr/local/bin/dind "https://raw.githubusercontent.com/docker/docker/${DIND_COMMIT}/hack/dind"; \
+	chmod +x /usr/local/bin/dind
+
 # Install Docker with dind support
 COPY dockerd-entrypoint.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/dockerd-entrypoint.sh
-
-# From the docker:17.09
-RUN set -x \
-    && curl -fSL "https://${DOCKER_BUCKET}/linux/static/${DOCKER_CHANNEL}/x86_64/docker-${DOCKER_VERSION}.tgz" -o docker.tgz \
-    && echo "${DOCKER_SHA256} *docker.tgz" | sha256sum -c - \
-    && tar --extract --file docker.tgz --strip-components 1  --directory /usr/local/bin/ \
-    && rm docker.tgz \
-    && docker -v \
-# From the docker dind 17.09
-    # && apt-get update && apt-get install -y --no-install-recommends \
-    #           e2fsprogs=1.42.9-* iptables=1.4.21-* xfsprogs=3.1.9ubuntu2 xz-utils=5.1.1alpha+20120614-* \
-    && apt-get update && apt-get install -y --no-install-recommends \
-              e2fsprogs iptables xfsprogs xz-utils \
-# set up subuid/subgid so that "--userns-remap=default" works out-of-the-box
-    && addgroup dockremap \
-    && useradd -g dockremap dockremap \
-    && echo 'dockremap:165536:65536' >> /etc/subuid \
-    && echo 'dockremap:165536:65536' >> /etc/subgid \
-    && wget "https://raw.githubusercontent.com/docker/docker/${DIND_COMMIT}/hack/dind" -O /usr/local/bin/dind \
-    && curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-Linux-x86_64 > /usr/local/bin/docker-compose \
-    && chmod +x /usr/local/bin/dind /usr/local/bin/docker-compose \
-# Ensure docker-compose works
-    && docker-compose version \
-    && rm -rf /var/lib/apt/lists/* \
-    && apt-get clean
-
 
 VOLUME /var/lib/docker
+EXPOSE 2375 2376
 
 ENTRYPOINT ["dockerd-entrypoint.sh"]
+CMD ["sh"]
