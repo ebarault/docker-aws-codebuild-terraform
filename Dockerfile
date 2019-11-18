@@ -20,7 +20,7 @@ RUN apt-get update && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
       wget curl git openssh-client jq python python-dev build-essential make \
-      ca-certificates tar gzip zip unzip bzip2 gettext-base && \
+      ca-certificates tar gzip zip unzip bzip2 gettext-base rsync && \
     rm -rf /var/lib/apt/lists/* && \
     apt-get clean
 
