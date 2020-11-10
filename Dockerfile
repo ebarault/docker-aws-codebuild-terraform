@@ -20,9 +20,22 @@ RUN apt-get update && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
       wget curl git openssh-client jq python python-dev build-essential make \
-      ca-certificates tar gzip zip unzip bzip2 gettext-base rsync && \
+      ca-certificates tar gzip zip unzip bzip2 gettext-base rsync \
+      gconf-service libasound2 libatk1.0-0 libc6 libcairo2 libcups2 \
+      libdbus-1-3 libexpat1 libfontconfig1 libgcc1 libgconf-2-4 libgdk-pixbuf2.0-0 \
+      libglib2.0-0 libgtk-3-0 libnspr4 libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 \
+      libx11-6 libx11-xcb1 libxcb1 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 \
+      libxi6 libxrandr2 libxrender1 libxss1 libxtst6 fonts-liberation \
+      libappindicator1 libnss3 lsb-release xdg-utils wget locales && \
     rm -rf /var/lib/apt/lists/* && \
     apt-get clean
+
+# Set the locale
+RUN sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
+    locale-gen
+ENV LANG en_US.UTF-8  
+ENV LANGUAGE en_US:en  
+ENV LC_ALL en_US.UTF-8
 
 # Install Nodejs
 RUN curl -sL https://deb.nodesource.com/setup_"$NODE_VERSION" | bash -
