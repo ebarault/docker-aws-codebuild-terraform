@@ -3,7 +3,12 @@ FROM ubuntu:16.04
 ARG TERRAFORM_VERSION=0.11.14
 ARG TERRAGRUNT_VERSION=0.18.7
 ARG NODE_VERSION=12.x
-ARG AWSCLI_VERSION=1.18.174
+
+# last version to support python 2.7
+ARG AWSCLI_VERSION=1.19.112
+# botocore requirement >=1.21.0,<1.22.0
+ARG AWSEBCLI_VERSION=3.20.0
+
 ARG GITLFS_VERSION=2.7.2
 ARG ANSIBLE_VERSION=2.8.2
 
@@ -26,7 +31,8 @@ RUN apt-get update && \
       libglib2.0-0 libgtk-3-0 libnspr4 libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 \
       libx11-6 libx11-xcb1 libxcb1 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 \
       libxi6 libxrandr2 libxrender1 libxss1 libxtst6 fonts-liberation \
-      libappindicator1 libnss3 lsb-release xdg-utils wget locales && \
+      libappindicator1 libnss3 libffi-dev libssl-dev \
+      lsb-release xdg-utils wget locales && \
     rm -rf /var/lib/apt/lists/* && \
     apt-get clean
 
@@ -48,8 +54,11 @@ RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources
     apt-get install yarn
 
 # Install pip
-RUN wget "https://bootstrap.pypa.io/get-pip.py" -O /tmp/get-pip.py && \
+RUN wget "https://bootstrap.pypa.io/pip/2.7/get-pip.py" -O /tmp/get-pip.py && \
     python /tmp/get-pip.py
+
+# RUN pip install cryptography==2.8
+RUN pip install cryptography==3.1.1
 
 # Install Ansible
 RUN pip install "ansible==$ANSIBLE_VERSION"
@@ -66,7 +75,8 @@ RUN pip install awscli=="$AWSCLI_VERSION" && \
     rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Install AWS ELASTIC BEANSTALK CLI
-RUN pip install awsebcli --upgrade
+RUN pip install awsebcli=="$AWSEBCLI_VERSION" && \
+    rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Install Terraform
 RUN curl -sL https://releases.hashicorp.com/terraform/"$TERRAFORM_VERSION"/terraform_"$TERRAFORM_VERSION"_linux_amd64.zip -o terraform_"$TERRAFORM_VERSION"_linux_amd64.zip && \
