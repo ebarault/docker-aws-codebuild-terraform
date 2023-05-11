@@ -12,8 +12,9 @@ ARG AWSEBCLI_VERSION=3.20.0
 ARG GITLFS_VERSION=2.7.2
 ARG ANSIBLE_VERSION=2.8.2
 
-ENV DOCKER_VERSION="18.09.8" \
-    DIND_COMMIT="37498f009d8bf25fbb6199e8ccd34bed84f2874b" \
+# https://github.com/docker/docker/tree/master/hack/dind
+ENV DOCKER_VERSION="23.0.5" \
+    DIND_COMMIT="1f32e3c95d72a29b3eaacba156ed675dba976cb5" \
     DOCKER_COMPOSE_VERSION="1.24.1"
 
 RUN apt-get update && \
@@ -137,9 +138,6 @@ RUN set -x \
 	&& useradd -g dockremap dockremap \
 	&& echo 'dockremap:165536:65536' >> /etc/subuid \
 	&& echo 'dockremap:165536:65536' >> /etc/subgid
-
-# https://github.com/docker/docker/tree/master/hack/dind
-ENV DIND_COMMIT 37498f009d8bf25fbb6199e8ccd34bed84f2874b
 
 RUN set -eux; \
 	wget -O /usr/local/bin/dind "https://raw.githubusercontent.com/docker/docker/${DIND_COMMIT}/hack/dind"; \
